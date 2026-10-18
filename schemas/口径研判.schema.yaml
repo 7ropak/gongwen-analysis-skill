@@ -1,0 +1,51 @@
+# 公文分析 · 口径研判契约（发布侧）
+# 消费者：技能 口径研判与生成 ｜ 存放位置：output/<主体>-口径研判-<YYYYMMDD>.md
+
+schema_version: 1
+
+input:
+  required:
+    事件描述: { type: text, desc: 发生了什么；可含已有口径 }
+    主体: { type: string }
+  optional:
+    事件类型: { type: enum, values: [产品安全, 召回, 数据, 财务, 人事, 其他] }
+    已确认事实: { type: text, desc: 内部已验证的事实边界——定性充分性的基准 }
+    上市地: { type: enum, values: [A股, 港股, 美股, 非上市] }
+    已有口径: { type: text, desc: 已发 Holding Statement 等，作为续接基准 }
+
+output:
+  sections:
+    - id: g1
+      name: 事件分级与类型
+      fields: [安全敏感度, 传播速度, 事件类型, 不适用的研判分支, 牵引层级]
+      rule: 牵引层级只写「待主体内部确认」，不推测
+    - id: g2
+      name: 六分支研判清单
+      fields: [分支, 待回答的问题, 事实状态（已确认／待确认／不适用）]
+      rule: 不代填内部证据
+    - id: g3
+      name: 四类研判输出
+      fields: [事实底座, 压力图, 承诺边界, 公众叙事]
+      rule: 压力图须与 S3／S6 推演结果并置，差异处标注
+    - id: g4
+      name: 承诺边界三分表
+      fields: [可承诺（含核验时点与方式）, 不可承诺（含理由）, 需上报（含上报对象）]
+      rule: 核心产物；对外表述不得超出内部已验证证据范围
+    - id: g5
+      name: 定性充分性与口径分流
+      fields: [定性充分性判定, 分流结果（Holding Statement / 正式情况说明）]
+    - id: g6
+      name: 口径草案
+      fields: [正文, 逐句策略标注（IRT 编号）, 每句事实依据]
+      rule: 无依据句删除或改「待确认」；须过 SCCT 一致性检查
+    - id: g7
+      name: 审批与发布前检查表
+      fields: [须审批项, 法定披露核查, 事实依据核查, 策略自洽核查, 时间表可核验核查]
+    - id: g8
+      name: 边界声明
+      rule: 声明本件为内部研判辅助、非对外成品稿；不构成法律意见
+
+run_mode:
+  name: 口径研判
+  requires_published_doc: false
+  audit: 必过 S10（简版：越界 ＋ 证据依据核对）

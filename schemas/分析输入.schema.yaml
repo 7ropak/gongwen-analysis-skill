@@ -1,0 +1,43 @@
+# 公文分析 · 输入契约
+# 消费者：公文分析Agent（L4）、技能 公文类型与结构解析 / 事件背景调研
+# 变更规则：字段增删须同步 agents/公文分析Agent.md L4 与 skills/ 相关技能
+
+schema_version: 1
+
+required:
+  公文内容:
+    type: text | url | file
+    desc: 公文原文。URL 由 S2 抓取正文；file 支持 md/txt/pdf 提取文本
+    note: 截图类需用户提供可检索文本
+
+optional:
+  主体:
+    type: string
+    desc: 发布主体名称；未给时由 S1/S2 推断并标注「推断」
+  事件:
+    type: string
+    desc: 事件名或一句话背景
+  时间窗:
+    type: string
+    default: 近12个月
+    desc: S2 检索范围
+  上市地:
+    type: enum
+    values: [A股, 港股, 美股, 非上市]
+    desc: 决定 S5 的规则基准（「本应有什么」）
+  模式:
+    type: enum
+    values: [速读, 标准, 跟踪复检, 口径研判]
+    default: 标准
+  关注群体:
+    type: list<enum>
+    values: [公众, 监管, 资本, 客户, 员工, 供应商渠道, 媒体, 社区团体, 竞争对手]
+    desc: 指定时在报告中置顶详述
+  跟踪事件ID:
+    type: string
+    pattern: "^EV-\\d{8}-\\d{2}$"
+    desc: 跟踪复检模式下必填
+
+constraints:
+  - 只处理用户提供的文本或公开渠道内容；不检索非公开信息
+  - 同一主体同一事件的系列公文，按「主报告 ＋ 单件卡片」处理

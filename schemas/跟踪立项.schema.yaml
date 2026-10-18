@@ -1,0 +1,50 @@
+# 公文分析 · 跟踪立项契约
+# 消费者：技能 跟踪立项管理 ｜ 存放位置：data/tracking/<事件ID>.md
+
+schema_version: 1
+
+event:
+  id:
+    type: string
+    pattern: "^EV-\\d{8}-\\d{2}$"
+    desc: 事件ID ＝ EV ＋ 立项日期 ＋ 当日两位序号
+  title: { type: string, required: true }
+  subject: { type: string, required: true }
+  type:
+    type: enum
+    values: [监管调查, 诉讼仲裁, 重组并购, 危机处置, 行业事件, 其他]
+  opened_at: { type: date, required: true }
+  status:
+    type: enum
+    values: [观察中, 已结案, 已升级, 已终止]
+    default: 观察中
+    rule: 状态变更须在「记录」段写明判据
+
+cadence:
+  interval: { type: string, desc: "如 7天 / 30天 / 每5个交易日 / 按节点" }
+  next_review: { type: date }
+  basis: { type: string, desc: 节奏依据（披露义务/开庭节点/危机处置惯例）}
+
+baseline:            # 立项时的判断基准，复检时原样比对，不复写
+  worst_case: { type: list<string> }
+  verifiable_commitments:
+    - { 承诺原文, 承诺方, 可核验时点, 核验方式 }
+
+indicators:          # 必须可观测：谁 在 什么时点 做什么
+  - id: { type: string, pattern: "^IND-\\d{2}$" }
+    observe: { type: string }
+    when: { type: string }
+    meaning_if_happens: { type: string }
+    meaning_if_not: { type: string }
+
+records:             # 只追加，不删改
+  - date: { type: date }
+    new_facts:
+      - { 摘要, source_url, source_level }
+    indicator_status:
+      - { id, status: [发生, 未发生, 反向], note }
+    conclusion_update: { type: string }
+
+governance:
+  禁止: [删除记录, 改写基线, 自动立项, 自动复检]
+  归档: 状态为已结案/已终止时移入 _archive/，保留文件名与原结构

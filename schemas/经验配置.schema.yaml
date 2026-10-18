@@ -1,0 +1,48 @@
+# 公文分析 · 用户经验配置契约
+# 消费者：技能 利益相关者建模 / 声明语用标注 / 财务与合规信号扫描
+# 存放位置：knowledge-base/用户经验/公文体感.md（YAML 段）
+
+schema_version: 1
+
+version: { type: int, default: 1 }
+owner: { type: string, default: 用户 }
+updated: { type: date }
+
+rules:
+  - id:
+      type: string
+      pattern: "^usr-\\d{3}$"
+      desc: 用户经验条目编号，只增不重
+    scope:
+      type: enum
+      values: [文种, 群体, 主体, 通用]
+      desc: 适用范围——决定该经验在哪些分析段落被取用
+    trigger:
+      type: string
+      required: true
+      desc: 可观测触发条件（文本中出现什么、哪类主体、哪种文种）
+    judgment:
+      type: string
+      required: true
+      desc: 用户据此得出的判断
+    source:
+      type: enum
+      values: [个人经验, 行业惯例, 案例复盘]
+    confidence:
+      type: enum
+      values: [高, 中, 低]
+    note:
+      type: string
+      desc: 补充说明（如失效条件、适用行业）
+
+priority:            # 读取优先级（硬规则）
+  order: [用户经验, 知识基线, 模型常识/联网]
+  on_conflict: 并列呈现并标注各自依据，禁止静默取舍
+
+write_policy:
+  - Agent 默认只读；仅当用户明确要求记录时才写入
+  - 过时条目不删除：改 confidence 为「低」或在 note 说明失效条件
+  - 涉及具体主体的非公开信息禁止写入
+
+annotation:
+  rule: 结论依据用户经验时，行末标注「（依据用户经验 usr-XXX）」

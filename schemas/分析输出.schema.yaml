@@ -1,0 +1,71 @@
+# 公文分析 · 输出契约
+# 消费者：技能 分析报告生成、分析审计Agent、跟踪立项管理
+#
+# 【双层产物】本项目的产出分两层，判据唯一事实源＝prompts/分析口径片段.md 片段 H：
+#   ① 交付版（deliverable）——读者＝最终读者；只回答「这份公文说了什么 ＋ 可能产生什么影响」
+#   ② 调试件（internal_record）——读者＝用户／调试方；放方法论、判据、缺失、核对、复核、待办
+
+schema_version: 2
+
+deliverable:
+  path: "output/<主体>-<文种>-<YYYYMMDD>.md"
+  variant_fast: "output/<主体>-<文种>-<YYYYMMDD>-速读.md"
+  sections:          # 标题与顺序固定（跨期可对照）；无内容章节整节省略，不留空架子
+    - id: "0"
+      name: 摘要
+      required: true
+      fields: [公文一句话, 谁最在意, 最需留意的一点, 观察点数量]
+    - id: "1"
+      name: 这份公文说了什么
+      fields: [内容复述, 要点]
+      rule: 平实复述文本内容与要点；不做结构对照、不列缺失项
+    - id: "2"
+      name: 事件背景
+      fields: [时间线, 主体情况, 既往]
+      rule: 事实层每条附来源
+    - id: "3"
+      name: 各方的反应
+      fields: [对象, 在意什么, 可能的反应, 强度, 时点]
+      rule: 只列与事件实质相关的对象；用平实语言，不出现属性打分与档位名
+    - id: "4"
+      name: 影响判断
+      fields: [可能的情况, 成立条件, 可能性, 反向结论]
+    - id: "5"
+      name: 需要留意的信号
+      fields: [留意什么, 时点, 出现说明什么]
+    - id: "6"
+      name: 边界声明
+      required: true
+      rule: 含非投资建议／非法律意见；任何模式下不可省
+  forbidden:         # 出现即视为不合格（判据 → 片段 H）
+    - 方法论名称与框架编号（如六段式、IRT #n、SCCT 姿态名）
+    - 判据来源与内部文件指向
+    - 缺失组件清单与结构对照
+    - 属性打分、档位名、逐类核对过程
+    - 复核意见明细、待办与迭代登记、流水线段位编号
+
+internal_record:
+  path: "debug/调试任务汇报-<主体>-<YYYYMMDD>.md"
+  sections:
+    - 本轮修正（对用户反馈的处置）
+    - 判据与框架（类型定位／法定性档／结构对照／语用逐句标注／SCCT／框架缺口／文本边界）
+    - 缺失组件清单
+    - 群体核对记录（9 类逐类，含 salience 与排除项）
+    - 复核意见（指向复核件）
+    - 待确认项
+  trigger: 标准分析与跟踪复检**每次同步产出**；速读模式可不产（用户点名时补产）
+
+audit:
+  source: 分析审计Agent
+  fields: [verdict, issues, summary, coverage_note]
+  placement: `debug/`；**不进交付版**
+
+fast_mode:
+  required_sections: ["0", "1", "6"]
+  omitted_sections: ["2", "3", "4", "5"]
+  rule: 省略的章节直接不出现
+
+grading:             # 仅用于内部记录与推演过程，不进交付版
+  强度: [低, 中, 高]
+  时点: [即时, 短期, 中期, 长期]
+  可能性: 只允许「高/中/低」，禁止百分比
